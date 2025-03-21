@@ -6,7 +6,7 @@
     <title>Auto Annunciation Scheduler</title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="logoAAS.ico">
+    <link rel="icon" type="image/png" href="logoAAS.png">
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
@@ -17,7 +17,7 @@
         body {
             font-family: 'Poppins', sans-serif;
             text-align: center;
-            background: url('retail4.jpg') no-repeat center center fixed;
+            background: url('6057485.jpg') no-repeat center center fixed;
             background-size: cover;
             margin: 0;
             padding: 20px;
@@ -56,7 +56,7 @@
             color: #333;
         }
 
-        /* Make all inputs, select, and button the same width */
+        /* Inputs, Select, Button Styles */
         input, select, button {
             width: 100%;
             max-width: 100%;
@@ -183,39 +183,60 @@
         <div id="scheduleList" class="schedule-list"></div>
     </div>
 
-    <!-- Track Table -->
-    <div class="track-table">
-        <h3>🎵 Track List</h3>
-        <table>
-            <tr>
-                <th>Track</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Track 01</td>
-                <td>Good Morning Message</td>
-            </tr>
-            <tr>
-                <td>Track 02</td>
-                <td>TT Filling SOP</td>
-            </tr>
-            <tr>
-                <td>Track 03</td>
-                <td>For EnP & Maintenance</td>
-            </tr>
-            <tr>
-                <td>Track 04</td>
-                <td>LSR</td>
-            </tr>
-            <tr>
-                <td>Track 05</td>
-                <td>Parking</td>
-            </tr>
-            <tr>
-                <td>Others</td>
-                <td>Customizable as per need</td>
-            </tr>
-        </table>
-    </div>
+    <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyCCNhBurP72OcbckC-5rmgV5xEbZ0HJzxA",
+            authDomain: "aasmathura-c1b3e.firebaseapp.com",
+            databaseURL: "https://aasmathura-c1b3e-default-rtdb.firebaseio.com/",
+            projectId: "aasmathura-c1b3e"
+        };
+        firebase.initializeApp(firebaseConfig);
+        var db = firebase.database();
+
+        function addSchedule() {
+            var hour = document.getElementById("hour").value;
+            var minute = document.getElementById("minute").value;
+            var file = document.getElementById("file").value;
+
+            if (hour === "" || minute === "" || file === "") {
+                alert("⚠️ Please fill all fields!");
+                return;
+            }
+
+            var newScheduleRef = db.ref("schedule").push();
+            newScheduleRef.set({
+                hour: parseInt(hour),
+                minute: parseInt(minute),
+                file: file
+            }).then(() => {
+                alert("✅ Schedule Added Successfully!");
+                document.getElementById("hour").value = "";
+                document.getElementById("minute").value = "";
+                loadSchedule();
+            }).catch(error => alert("❌ Error adding schedule: " + error.message));
+        }
+
+        function loadSchedule() {
+            var list = document.getElementById("scheduleList");
+            list.innerHTML = "";
+
+            db.ref("schedule").on("value", function(snapshot) {
+                list.innerHTML = "";
+                snapshot.forEach(childSnapshot => {
+                    var data = childSnapshot.val();
+                    list.innerHTML += `<div class="schedule-item">
+                        ⏰ ${data.hour}:${data.minute} - 🎵 ${data.file}
+                        <button class="delete-btn" onclick="deleteSchedule('${childSnapshot.key}')">🗑 Delete</button>
+                    </div>`;
+                });
+            });
+        }
+
+        function deleteSchedule(key) {
+            db.ref("schedule/" + key).remove().then(() => loadSchedule());
+        }
+
+        window.onload = loadSchedule;
+    </script>
 </body>
 </html>
